@@ -1,0 +1,51 @@
+<project basedir="." default="build" name="JRuby Cext">
+
+    <property name="jruby-cext-native.home" value="src/native"/>
+
+    <!-- sets up a "make" command from ENV, if available -->
+    <condition property="make.cmd" value="${env.MAKE}">
+        <isset property="env.MAKE"/>
+    </condition>
+    <condition property="make.cmd" value="make">
+        <not>
+            <isset property="make.cmd"/>
+        </not>
+    </condition>
+
+    <target name="build-jruby-cext-java">
+        <mkdir dir="build"/>
+        <javac destdir="build" debug="true" srcdir="src/java"
+               source="1.5" target="1.5" deprecation="true"
+               encoding="UTF-8"/>
+        <jar destfile="build/jruby-cext.jar" compress="true" index="true" update="true">
+            <fileset dir="build" includes="**/**/*.class"/>
+        </jar>
+    </target>
+
+    <target name="build-jruby-cext-native" depends="build-jruby-cext-java"
+            description="Build JRuby cext support">
+        <exec osfamily="unix" executable="${make.cmd}" dir="${jruby-cext-native.home}" failonerror="true">
+            <arg value="JAVA_HOME=&quot;${java.home}&quot;"/>
+        </exec>
+        <exec osfamily="windows" executable="cmd" dir="${jruby-cext-native.home}" failonerror="true">
+            <arg line='/c sh -c "${make.cmd} CC=gcc JAVA_HOME=${java.home}"'/>
+        </exec>
+    </target>
+
+    <target name="clean-jruby-cext-native"
+            description="Build JRuby cext support">
+        <exec osfamily="unix" executable="${make.cmd}" dir="${jruby-cext-native.home}" failonerror="true">
+            <arg value="dist-clean"/>
+        </exec>
+        <exec osfamily="windows" executable="cmd" dir="${jruby-cext-native.home}" failonerror="true">
+            <arg line='/c sh -c "${make.cmd} dist-clean"'/>
+        </exec>
+    </target>
+
+    <target name="clean" description="clean up">
+        <delete dir="build"/>
+        <delete dir="lib"/>
+    </target>
+
+    <target name="build" depends="build-jruby-cext-native"/>
+</project>
