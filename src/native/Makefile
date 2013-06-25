@@ -30,7 +30,7 @@ ifneq ($(findstring cygwin, $(BUILD_OS)),)
   OS = win32
 endif
 
-LIBCEXT = $(BUILD_DIR)/$(PLATFORM)/$(PREFIX)$(LIBNAME).$(JNIEXT)
+LIBCEXT = $(BUILD_DIR)/$(PREFIX)$(LIBNAME).$(JNIEXT)
 
 CPU ?= $(shell uname -m | sed -e 's/i[345678]86/i386/' | sed -e 's/amd64/x86_64/')
 MODEL = 32 # Default to 32bit compiles
@@ -50,10 +50,10 @@ JNIEXT = so
 export MACOSX_DEPLOYMENT_TARGET=10.4
 
 CCACHE := $(strip $(realpath $(shell which ccache 2> /dev/null)))
-SRC_DIR ?= .
+SRC_DIR ?= $(shell pwd)
 JNI_DIR ?= $(SRC_DIR)
-BUILD_DIR ?= ../../build
-HDR_DIR ?= $(SRC_DIR)/include
+BUILD_DIR ?= $(SRC_DIR)/../../build
+HDR_DIR ?= $(BUILD_DIR)/include
 RUBY_HEADERS = $(patsubst %.h, $(HDR_DIR)/ruby/%.h, $(notdir $(wildcard $(SRC_DIR)/include/ruby/*.h)))
 RUBY_HEADERS += $(patsubst %.h, $(HDR_DIR)/%.h, $(notdir $(wildcard $(SRC_DIR)/include/*.h)))
 
