@@ -1,5 +1,8 @@
 # -*- makefile -*-
 
+JRUBY_BASEDIR = $(shell pwd)/../../
+JRUBY_CLASSES = $(JRUBY_BASEDIR)/core/target/classes
+
 GCC_VERSION := $(strip $(shell gcc --version))
 ifneq ($(strip $(findstring 4.,$(GCC_VERSION))),)
   ifeq ($(strip $(findstring 4.0,$(GCC_VERSION))),)
@@ -30,7 +33,7 @@ ifneq ($(findstring cygwin, $(BUILD_OS)),)
   OS = win32
 endif
 
-LIBCEXT = $(BUILD_DIR)/$(PREFIX)$(LIBNAME).$(JNIEXT)
+LIBCEXT = $(JRUBY_NATIVE_DIR)/$(PLATFORM)/$(PREFIX)$(LIBNAME).$(JNIEXT)
 
 CPU ?= $(shell uname -m | sed -e 's/i[345678]86/i386/' | sed -e 's/amd64/x86_64/')
 MODEL = 32 # Default to 32bit compiles
@@ -52,8 +55,9 @@ export MACOSX_DEPLOYMENT_TARGET=10.4
 CCACHE := $(strip $(realpath $(shell which ccache 2> /dev/null)))
 SRC_DIR ?= $(shell pwd)
 JNI_DIR ?= $(SRC_DIR)
-BUILD_DIR ?= $(SRC_DIR)/../../build
-HDR_DIR ?= $(BUILD_DIR)/include
+JRUBY_NATIVE_DIR ?= $(JRUBY_BASEDIR)/lib/jni/
+BUILD_DIR ?= $(JRUBY_BASEDIR)/build
+HDR_DIR ?= $(JRUBY_NATIVE_DIR)/include
 RUBY_HEADERS = $(patsubst %.h, $(HDR_DIR)/ruby/%.h, $(notdir $(wildcard $(SRC_DIR)/include/ruby/*.h)))
 RUBY_HEADERS += $(patsubst %.h, $(HDR_DIR)/%.h, $(notdir $(wildcard $(SRC_DIR)/include/*.h)))
 
@@ -73,7 +77,7 @@ JFLAGS = -fno-omit-frame-pointer -fno-strict-aliasing
 DBG_FLAGS = -DNDEBUG
 OFLAGS = $(DBG_FLAGS) $(JFLAGS)
 
-WFLAGS = -W -Wall -Wno-unused -Wno-parentheses -Werror
+WFLAGS = -W -Wall -Wno-unused -Wno-unused-parameter -Wno-parentheses -Werror
 # MacOS headers have some undefined macros, so don't warn on these on darwin
 ifneq ($(OS),darwin)
   WFLAGS += -Wundef
@@ -317,7 +321,7 @@ $(RUBY_HEADERS): $(wildcard $(SRC_DIR)/include/ruby/*.h) $(SRC_DIR)/include/ruby
 
 $(JAVA_HDRS):
 	@mkdir -p $(@D)
-	javah -classpath $(CLASSPATH):../../build/jruby-cext.jar -d $(@D) $(subst _,., $(basename $(@F)))
+	javah -classpath $(JRUBY_CLASSES) -d $(@D) $(subst _,., $(basename $(@F)))
 
 .PHONY: clean
 clean: dist-clean

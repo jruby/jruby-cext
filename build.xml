@@ -17,9 +17,6 @@
         <javac destdir="build" debug="true" srcdir="src/java"
                source="1.5" target="1.5" deprecation="true"
                encoding="UTF-8"/>
-        <jar destfile="build/jruby-cext.jar" compress="true" index="true" update="true">
-            <fileset dir="build" includes="**/**/*.class"/>
-        </jar>
     </target>
 
     <target name="build-jruby-cext-native" depends="build-jruby-cext-java"
@@ -42,10 +39,17 @@
         </exec>
     </target>
 
+    <target name="build-jruby-cext-jar" depends="build-jruby-cext-java, build-jruby-cext-native">
+        <jar destfile="build/jruby-cext.jar" compress="true" index="true" update="true">
+            <fileset dir="build" includes="**/**/*.class"/>
+            <fileset dir="build" includes="libjruby-cext.*"/>
+        </jar>
+    </target>
+
     <target name="clean" description="clean up">
         <delete dir="build"/>
         <delete dir="lib"/>
     </target>
 
-    <target name="build" depends="build-jruby-cext-native"/>
+    <target name="build" depends="build-jruby-cext-jar"/>
 </project>
